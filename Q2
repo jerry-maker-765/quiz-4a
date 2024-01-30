@@ -1,0 +1,50 @@
+set.seed(564) # For reproducibility
+
+# Assume the true heights are normally distributed with a mean of 170 cm and standard deviation of 10 cm
+true_heights <- rnorm(20, 170, 10)
+
+# Edward's measurements are biased upwards by 1 cm with a standard deviation of 2 cm
+edward_errors <- rnorm(20, 1, 2)
+edward_heights <- true_heights + edward_errors
+
+# Hugo's measurements have random errors with a standard deviation of 2 cm
+hugo_errors <- rnorm(20, 0, 2)
+hugo_heights <- true_heights + hugo_errors
+
+# Lucy's measurements are biased downwards by 1 cm with a standard deviation of 2 cm
+lucy_errors <- rnorm(20, -1, 2)
+lucy_heights <- true_heights + lucy_errors
+
+# Combine the data
+height_data <- data.frame(
+  Edward = edward_heights,
+  Hugo = hugo_heights,
+  Lucy = lucy_heights
+)
+
+# Reshape data for analysis
+library(reshape2)
+height_melted <- melt(height_data)
+
+# Plotting the data
+library(ggplot2)
+ggplot(height_melted, aes(x = variable, y = value, fill = variable)) +
+  geom_boxplot() +
+  labs(title = "Simulated Height Measurements", x = "Friend", y = "Height (cm)")
+
+# Run the tests
+
+# 1. ANOVA to compare means
+anova_result <- aov(value ~ variable, data = height_melted)
+summary(anova_result)
+
+# 2. Bartlett's test to compare variances
+bartlett_result <- bartlett.test(value ~ variable, data = height_melted)
+bartlett_result
+
+# 3. Shapiro-Wilk test for normality
+shapiro_edward <- shapiro.test(height_data$Edward)
+shapiro_hugo <- shapiro.test(height_data$Hugo)
+shapiro_lucy <- shapiro.test(height_data$Lucy)
+
+list(shapiro_edward = shapiro_edward, shapiro_hugo = shapiro_hugo, shapiro_lucy = shapiro_lucy)
